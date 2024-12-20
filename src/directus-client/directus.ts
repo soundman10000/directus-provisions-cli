@@ -13,11 +13,15 @@ export class DirectusClient {
       .with(authentication('json'));
   }
 
-  async listItems(collection: string) {
-    // Authenticate first
-    await this.client.login(process.env.DIRECTUS_USER ?? '', process.env.DIRECTUS_PASSWORD ?? '');
-
-    // Then fetch items
-    return this.client.request(readItems(collection));
+  async listItems(collection: string): Promise<void> {
+    try {
+      await this.client.login(process.env.DIRECTUS_USER ?? '', process.env.DIRECTUS_PASSWORD ?? '');
+      const stuff = await this.client.request(readItems(collection));
+      console.log(stuff);
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : 'An unknown error occurred');
+    } finally {
+      // todo: logout
+    }
   }
 }
