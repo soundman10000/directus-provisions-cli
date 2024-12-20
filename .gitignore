@@ -1,0 +1,19 @@
+# From TypeScript.gitignore
+node_modules/
+*.js
+*.js.map
+dist/
+build/
+coverage/
+
+# From VisualStudioCode.gitignore
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+# Additional common ignores
+*.log
+.DS_Store
