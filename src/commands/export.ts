@@ -12,8 +12,7 @@ const command: CommandModule = {
       
       const collections = await client
         .readCollections()
-        .then(toCollectionsModel)
-        .then(z => z as Collection[]);
+        .then(toCollectionsModel);
 
       collections.map(x => console.log(x))
     } catch (error) {
@@ -25,7 +24,7 @@ const command: CommandModule = {
 }
 
 const filterSystemCollections = (collection: Collection[]): Collection[] => 
-  collection?.filter(z => !z.collection.startsWith('directus_')) ?? []
+  collection.filter(z => !z.collection.startsWith('directus_'))
 
 const filterFolders = (collection: Collection[]): Collection[] => 
   collection.filter(z => z.schema != null)
@@ -37,6 +36,6 @@ const toCollectionsModel = pipe(
   filterSystemCollections,
   filterFolders,
   pullCollection
-);
+) as (collections: Collection[]) => Collection[]
 
 export default command
