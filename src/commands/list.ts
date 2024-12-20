@@ -15,7 +15,6 @@ const command: CommandModule = {
   handler: async (argv) => {
     const client = new DirectusClient();
     try {
-      await client.login()
       await client.listItems(argv.collection as string);
     } catch (error) {
       console.error('Command failed:', error instanceof Error ? error.message : 'An unknown error occurred');
