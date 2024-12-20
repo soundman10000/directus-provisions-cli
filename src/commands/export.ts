@@ -9,12 +9,14 @@ const command: CommandModule = {
   handler: async (argv) => {
     const client = new DirectusClient();
     try {
+      await client.login()
       
       const collections = await client
         .readCollections()
         .then(toCollectionsModel);
 
-      collections.map(x => console.log(x))
+      const button = await client.listItems(collections[0])
+      console.log(button)
     } catch (error) {
       console.error('Command failed:', error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
@@ -36,6 +38,6 @@ const toCollectionsModel = pipe(
   filterSystemCollections,
   filterFolders,
   pullCollection
-) as (collections: Collection[]) => Collection[]
+) as (collections: Collection[]) => string[]
 
 export default command

@@ -18,20 +18,15 @@ export class DirectusClient {
       .with(authentication('json'));
   }
 
-  async listItems(collection: string): Promise<void> {
-    await this.login()
-
+  async listItems(collection: string): Promise<any> {
     try {
-      const response = await this.client.request(readItems(collection));
-      console.log(response)
+      return await this.client.request(readItems(collection));
     } catch (exception) {
       this.handleError(exception);
     }
   }
 
   async readCollections(): Promise<Collection[]> {
-    await this.login()
-
     try {
       return await this.client.request(readCollections()).then(z => z as Collection[]);
     } catch (exception) {
@@ -40,7 +35,7 @@ export class DirectusClient {
     }
   }
 
-  private async login() {
+  async login() {
     if (!process.env.DIRECTUS_USER || !process.env.DIRECTUS_PASSWORD) {
       throw new Error('DIRECTUS_USER/DIRECTUS_PASSWORD environment variable is not set');
     }
