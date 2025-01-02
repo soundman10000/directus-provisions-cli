@@ -6,20 +6,27 @@ import { v4 as uuidv4 } from 'uuid';
 dotenv.config();
 
 export class DirectusClient {
+  private static instance: DirectusClient
   private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>;
 
   constructor() {
-    if (!process.env.DIRECTUS_URL) {
-      throw new Error('DIRECTUS_URL environment variable is not set');
+    const directusUrl = process.env.DIRECTUS_URL
+    const directusToken = process.env.DIRECTUS_TOKEN
+
+    if (!directusUrl || !directusToken) {
+      throw new Error('DIRECTUS_URL and DIRECTUS_TOKEN environment variables must be set')
     }
 
-    if (!process.env.DIRECTUS_TOKEN) {
-      throw new Error('DIRECTUS_TOKEN environment variable is not set');
-    }
-
-    this.client = createDirectus(process.env.DIRECTUS_URL)
+    this.client = createDirectus(directusUrl)
       .with(rest())
-      .with(staticToken(process.env.DIRECTUS_TOKEN))
+      .with(staticToken(directusToken))
+  }
+
+  public static getInstance(): DirectusClient {
+    if (!DirectusClient.instance) {
+      DirectusClient.instance = new DirectusClient()
+    }
+    return DirectusClient.instance
   }
 
   async listItems(collection: string): Promise<any[]> {

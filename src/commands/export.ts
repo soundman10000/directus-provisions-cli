@@ -1,62 +1,39 @@
 import { CommandModule } from "yargs"
-import { DirectusClient } from '../directus-client/directus'
-import type { Collection } from '../types/directus'
-import { pipe } from '../fp/composition'
-import * as fs from 'fs';
+import { ExportService } from '../service/export-service'
+import { CollectionService } from '../service/collection-service'
+import { LoadingAnimation } from '../logger/loading-animation'
 
 const command: CommandModule = {
   command: 'export',
   describe: 'Export Client Directus Provisions',
   handler: async (argv) => {
-    const client = new DirectusClient()
+    const collectionService = new CollectionService()
+    const exportService = new ExportService()
+    const loadingAnimation = new LoadingAnimation()
+
     try {
-      console.log('Reading Collections')
+      const collections = await collectionService.listCollections()
+      const preparedFiles = await exportService.exportCollections(collections)
 
-      const collections = await client
-        .readCollections()
-        .then(toCollectionsModel)
+      loadingAnimation.start('Giving Directus a minute to catch up')
+      await delay(2000)
+      loadingAnimation.stop()
 
-      console.log('Exporting Collections on Directus')
-
-      const id = await client.export(collections[0])
-      console.log(`downloaing file ${id}`)
-
-      // Wait for directus to catch up.
-      await waitOneSecond()
-
-      const result = await client.download(id)
-
-      fs.writeFileSync(`C:/users/jmalley/desktop/${collections[0]}.csv`, result);
+      await exportService.downloadFiles(preparedFiles)
 
     } catch (error) {
-      console.error('Command failed:', error instanceof Error ? error.message : 'An unknown error occurred')
+      process.stdout.write('\n')
+      const msg = error instanceof Error ? error.message : 'An unknown error occurred'
+      console.error('Command failed:', msg)
     } finally {
+      loadingAnimation.stop()
       process.exit(0)
     }
   }
 }
 
-const waitOneSecond = async (): Promise<void> => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve()
-    }, 1000)
-  })
+const delay = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
-
-const filterSystemCollections = (collection: Collection[]): Collection[] => 
-  collection.filter(z => !z.collection.startsWith('directus_'))
-
-const filterFolders = (collection: Collection[]): Collection[] => 
-  collection.filter(z => z.schema != null)
-
-const pullCollection = (collection: Collection[]): string[] =>
-  collection.map(z => z.collection)
-
-const toCollectionsModel = pipe(
-  filterSystemCollections,
-  filterFolders,
-  pullCollection
-) as (collections: Collection[]) => string[]
 
 export default command
