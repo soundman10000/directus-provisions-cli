@@ -10,8 +10,12 @@ export class CollectionService {
   }
 
   async listCollections(): Promise<string[]> {
-    console.log('Reading Collections on Directus')
+    process.stdout.write('Reading Collections on Directus\r\n')
     return await this.client.readCollections().then(toCollectionsModel)
+  }
+
+  async listItems(collection: string): Promise<any[]> {
+    return await this.client.listItems(collection)
   }
 }
 

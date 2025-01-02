@@ -1,6 +1,7 @@
 import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
 import * as fs from 'fs'
+import { LoadingAnimation } from '../logger/loading-animation'
 
 export class ExportService {
   private client: DirectusClient
@@ -12,13 +13,20 @@ export class ExportService {
   }
 
   async exportCollections(collections: string[]): Promise<{ collection: string, id: string }[]> {
+    const loadingAnimation = new LoadingAnimation()
     const fileIds: { collection: string, id: string }[] = []
+    
     for (const collection of collections) {
       console.log(`Exporting collection: ${collection}`)
 
       const id = await this.resilience.execute(() => this.client.export(collection))
       fileIds.push({ collection, id })
     }
+
+    loadingAnimation.start('Giving Directus a minute to catch up')
+    await this.delay(2000)
+    loadingAnimation.stop()
+
     return fileIds
   }
 
@@ -31,5 +39,9 @@ export class ExportService {
       fs.writeFileSync(fileName, result)
       console.log(`Exported ${collection} to ${fileName}`)
     }
+  }
+  
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }

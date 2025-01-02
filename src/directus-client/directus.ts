@@ -9,6 +9,13 @@ export class DirectusClient {
   private static instance: DirectusClient
   private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>;
 
+  public static getInstance(): DirectusClient {
+    if (!DirectusClient.instance) {
+      DirectusClient.instance = new DirectusClient()
+    }
+    return DirectusClient.instance
+  }
+
   constructor() {
     const directusUrl = process.env.DIRECTUS_URL
     const directusToken = process.env.DIRECTUS_TOKEN
@@ -20,13 +27,6 @@ export class DirectusClient {
     this.client = createDirectus(directusUrl)
       .with(rest())
       .with(staticToken(directusToken))
-  }
-
-  public static getInstance(): DirectusClient {
-    if (!DirectusClient.instance) {
-      DirectusClient.instance = new DirectusClient()
-    }
-    return DirectusClient.instance
   }
 
   async listItems(collection: string): Promise<any[]> {
