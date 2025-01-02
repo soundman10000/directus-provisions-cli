@@ -2,6 +2,7 @@ import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
 import * as fs from 'fs'
 import { LoadingAnimation } from '../logger/loading-animation'
+import { FileService } from '../utilities/file-manager'
 
 export class ExportService {
   private client: DirectusClient
@@ -30,14 +31,16 @@ export class ExportService {
     return fileIds
   }
 
-  async downloadFiles(preparedFiles: { collection: string, id: string }[]): Promise<void> {
-    for (const { collection, id } of preparedFiles) {
-      
-      const result = await this.resilience.execute(() => this.client.download(id))
+  async downloadFiles(collections: { collection: string, id: string }[], path: string): Promise<void> {
+    const fileService = new FileService()
+    for (const { collection, id } of collections) {
+      const fileName = `${path}/${collection}.csv`
+      process.stdout.write(`Writing collection ${collection} to ${fileName}`)
+      process.stdout.write('\n')
 
-      const fileName = `C:/users/jmalley/desktop/${collection}.csv`
-      fs.writeFileSync(fileName, result)
-      console.log(`Exported ${collection} to ${fileName}`)
+      await this.resilience
+        .execute(() => this.client.download(id))
+        .then(z => fileService.writeFile(fileName, z))
     }
   }
   

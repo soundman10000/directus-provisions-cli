@@ -10,7 +10,8 @@ export class CollectionService {
   }
 
   async listCollections(): Promise<string[]> {
-    process.stdout.write('Reading Collections on Directus\r\n')
+    process.stdout.write('Reading Collections on Directus')
+    process.stdout.write('\n')
     return await this.client.readCollections().then(toCollectionsModel)
   }
 

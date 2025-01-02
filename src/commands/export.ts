@@ -9,17 +9,20 @@ const command: CommandModule = {
     const collectionService = new CollectionService()
     const exportService = new ExportService()
     
+    const path = "C:/users/jmalley/desktop"
+
     try {
-      const preparedFiles = await collectionService
+      const collections = await collectionService
         .listCollections()
         .then(collections => exportService.exportCollections(collections))
 
-      await exportService.downloadFiles(preparedFiles)
+        
+      await exportService.downloadFiles(collections, path)
 
     } catch (error) {
       process.stdout.write('\n')
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
-      console.error('Command failed:', msg)
+      process.stdout.write(`Command failed: ${msg}`)
     } finally {
       process.exit(0)
     }

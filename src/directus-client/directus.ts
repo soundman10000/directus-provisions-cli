@@ -61,11 +61,9 @@ export class DirectusClient {
     return id
   }
 
-  async download(id: string): Promise<string> {
+  async download(id: string): Promise<ReadableStream<Uint8Array>> {
     try {
-      return await this.client
-        .request(readAssetRaw(id))
-        .then(this.streamToString)
+      return await this.client.request(readAssetRaw(id))
     } catch (exception) {
       this.handleError(exception);
       throw exception
@@ -82,24 +80,5 @@ export class DirectusClient {
 
   private isDirectusResponse(error: any): error is DirectusResponse {
     return 'errors' in error && Array.isArray(error.errors);
-  }
-  
-  private async streamToString(stream: ReadableStream): Promise<string> {
-    const reader = stream.getReader();
-    const chunks: Uint8Array[] = [];
-  
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-      }
-    } catch (exception) {
-      this.handleError(exception);
-    } finally {
-      reader.releaseLock();
-    }
-  
-    return Buffer.concat(chunks).toString('utf-8');
   }
 }
