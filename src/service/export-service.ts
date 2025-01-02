@@ -2,19 +2,24 @@ import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
 import * as fs from 'fs'
 import { LoadingAnimation } from '../logger/loading-animation'
-import { FileService } from '../utilities/file-manager'
+import { FileManager } from '../utilities/file-manager'
+import * as path from 'path'
+import JSZip from 'jszip'
+import { saveAs } from 'file-saver'
 
 export class ExportService {
   private client: DirectusClient
   private resilience: Resilience
+  private loadingAnimation: LoadingAnimation
 
   constructor() {
     this.client = DirectusClient.getInstance()
     this.resilience = new Resilience(3, 2000)
+    this.loadingAnimation = new LoadingAnimation()
   }
 
   async exportCollections(collections: string[]): Promise<{ collection: string, id: string }[]> {
-    const loadingAnimation = new LoadingAnimation()
+    
     const fileIds: { collection: string, id: string }[] = []
     
     for (const collection of collections) {
@@ -24,26 +29,44 @@ export class ExportService {
       fileIds.push({ collection, id })
     }
 
-    loadingAnimation.start('Giving Directus a minute to catch up')
+    this.loadingAnimation.start('Giving Directus a minute to catch up')
     await this.delay(2000)
-    loadingAnimation.stop()
+    this.loadingAnimation.stop()
 
     return fileIds
   }
 
-  async downloadFiles(collections: { collection: string, id: string }[], path: string): Promise<void> {
-    const fileService = new FileService()
-    for (const { collection, id } of collections) {
-      const fileName = `${path}/${collection}.csv`
-      process.stdout.write(`Writing collection ${collection} to ${fileName}`)
-      process.stdout.write('\n')
+  async downloadFiles(collections: { collection: string, id: string }[], outputPath: string): Promise<void> {
+    const fileManager = new FileManager()
+    const zip = new JSZip()
 
-      await this.resilience
+    for (const { collection, id } of collections) {
+      console.log(`Adding collection ${collection} to zip`)
+
+      const file = await this.resilience
         .execute(() => this.client.download(id))
-        .then(z => fileService.writeFile(fileName, z))
+        .then(fileManager.streamToString)
+
+      zip.file(`${collection}.csv`, file)
     }
+
+    const zipFilePath = path.join(outputPath, 'collections.zip')
+    console.log(zipFilePath, 'Zip File Path')
+
+    await new Promise<void>((resolve, reject) => {
+      zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+        .pipe(fs.createWriteStream(zipFilePath))
+        .on('finish', () => {
+          console.log('Zip file has been written to', zipFilePath)
+          resolve()
+        })
+        .on('error', (error) => {
+          console.error('Failed to write zip file:', error)
+          reject(error)
+        })
+    })
   }
-  
+
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
   }

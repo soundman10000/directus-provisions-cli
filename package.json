@@ -17,10 +17,13 @@
   "dependencies": {
     "@directus/sdk": "^18.0.3",
     "dotenv": "^16.4.7",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
     "uuid": "^11.0.3",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^22.10.2",
     "@types/yargs": "^17.0.33",
     "ts-node": "^10.9.2",
