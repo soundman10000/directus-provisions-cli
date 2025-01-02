@@ -1,11 +1,8 @@
 import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
-import * as fs from 'fs'
 import { LoadingAnimation } from '../logger/loading-animation'
 import { FileManager } from '../utilities/file-manager'
-import * as path from 'path'
 import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
 
 export class ExportService {
   private client: DirectusClient
@@ -23,7 +20,7 @@ export class ExportService {
     const fileIds: { collection: string, id: string }[] = []
     
     for (const collection of collections) {
-      console.log(`Exporting collection: ${collection}`)
+      process.stdout.write(`Exporting collection: ${collection}\n`)
 
       const id = await this.resilience.execute(() => this.client.export(collection))
       fileIds.push({ collection, id })
@@ -41,30 +38,16 @@ export class ExportService {
     const zip = new JSZip()
 
     for (const { collection, id } of collections) {
-      console.log(`Adding collection ${collection} to zip`)
+      process.stdout.write(`Adding collection ${collection} to zip\n`)
 
       const file = await this.resilience
         .execute(() => this.client.download(id))
-        .then(fileManager.streamToString)
+        .then(fileManager.streamToUint8Array)
 
       zip.file(`${collection}.csv`, file)
     }
 
-    const zipFilePath = path.join(outputPath, 'collections.zip')
-    console.log(zipFilePath, 'Zip File Path')
-
-    await new Promise<void>((resolve, reject) => {
-      zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
-        .pipe(fs.createWriteStream(zipFilePath))
-        .on('finish', () => {
-          console.log('Zip file has been written to', zipFilePath)
-          resolve()
-        })
-        .on('error', (error) => {
-          console.error('Failed to write zip file:', error)
-          reject(error)
-        })
-    })
+    await fileManager.writeZipFile(zip, 'collections.zip', outputPath)
   }
 
   private delay(ms: number): Promise<void> {
