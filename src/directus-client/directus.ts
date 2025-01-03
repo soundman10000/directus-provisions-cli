@@ -1,7 +1,18 @@
-import { createDirectus, RestClient, readItems, readCollections, rest, utilsExport, readAssetRaw, staticToken, StaticTokenClient } from '@directus/sdk'
+import { createDirectus,
+  RestClient,
+  readItems,
+  readCollections, 
+  rest,
+  utilsExport,
+  utilsImport,
+  readAssetRaw,
+  staticToken,
+  StaticTokenClient 
+} from '@directus/sdk'
 import dotenv from 'dotenv'
 import { DirectusResponse, Collection } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
+import { stdout } from 'process'
 
 dotenv.config()
 
@@ -51,7 +62,6 @@ export class DirectusClient {
 
   async export(collection: string): Promise<string> {
     const id: string = uuidv4()
-
     try {
       await this.client.request(utilsExport(collection, 'csv', {}, { id }))
     } catch (exception) {
@@ -61,12 +71,22 @@ export class DirectusClient {
     return id
   }
 
-  async download(id: string): Promise<ReadableStream<Uint8Array>> {
+  public async download(id: string): Promise<ReadableStream<Uint8Array>> {
     try {
       return await this.client.request(readAssetRaw(id))
     } catch (exception) {
       this.handleError(exception)
       throw exception
+    }
+  }
+
+  public async upload(collection: string, file: FormData): Promise<void> {
+    try {
+      process.stdout.write('Uploading file\n');
+      await this.client.request(utilsImport(collection, file));
+    } catch (exception) {
+      this.handleError(exception);
+      throw exception;
     }
   }
 
