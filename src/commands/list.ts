@@ -1,5 +1,5 @@
-import { CommandModule } from 'yargs';
-import { CollectionService } from '../service/collection-service';
+import { CommandModule } from 'yargs'
+import { CollectionService } from '../service/collection-service'
 
 const command: CommandModule = {
   command: 'list [collection]',
@@ -10,20 +10,20 @@ const command: CommandModule = {
         describe: 'The collection name',
         type: 'string',
         demandOption: true
-      });
+      })
   },
   handler: async (argv) => {
     const collectionService = new CollectionService()
     try {
-      const items = await collectionService.listItems(argv.collection as string);
-      process.stdout.write(JSON.stringify(items, null, 2));
+      const items = await collectionService.listItems(argv.collection as string)
+      process.stdout.write(JSON.stringify(items, null, 2) + '\n')
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
-      process.stdout.write(`Command failed: ${msg}`);
+      process.stdout.write(`Command failed: ${msg}`)
     } finally {
-      process.exit(0);
+      process.exit(0)
     }
   }
-};
+}
 
-export default command;
+export default command

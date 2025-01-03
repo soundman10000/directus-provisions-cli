@@ -55,17 +55,17 @@ export interface Collection {
     unarchive_value: string
     sort_field: string
     accountability: string
-    color: null | string;
+    color: null | string
     item_duplication_fields: null | any
     sort: number
-    group: string;
+    group: string
     collapse: 'open' | 'closed'
     preview_url: null | string
     versioning: boolean
-  };
+  }
   schema: {
     name: string
     schema: string | null
     catalog: string
-  };
+  }
 }

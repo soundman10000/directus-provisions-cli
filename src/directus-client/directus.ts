@@ -1,13 +1,13 @@
-import { createDirectus, RestClient, readItems, readCollections, rest, utilsExport, readAssetRaw, staticToken, StaticTokenClient } from '@directus/sdk';
-import dotenv from 'dotenv';
-import { DirectusResponse, Collection } from '../types/directus';
-import { v4 as uuidv4 } from 'uuid';
+import { createDirectus, RestClient, readItems, readCollections, rest, utilsExport, readAssetRaw, staticToken, StaticTokenClient } from '@directus/sdk'
+import dotenv from 'dotenv'
+import { DirectusResponse, Collection } from '../types/directus'
+import { v4 as uuidv4 } from 'uuid'
 
-dotenv.config();
+dotenv.config()
 
 export class DirectusClient {
   private static instance: DirectusClient
-  private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>;
+  private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>
 
   public static getInstance(): DirectusClient {
     if (!DirectusClient.instance) {
@@ -31,9 +31,9 @@ export class DirectusClient {
 
   async listItems(collection: string): Promise<any[]> {
     try {
-      return await this.client.request(readItems(collection));
+      return await this.client.request(readItems(collection))
     } catch (exception) {
-      this.handleError(exception);
+      this.handleError(exception)
     }
 
     return []
@@ -41,21 +41,21 @@ export class DirectusClient {
 
   async readCollections(): Promise<Collection[]> {
     try {
-      return await this.client.request(readCollections()).then(z => z as Collection[]);
+      return await this.client.request(readCollections()).then(z => z as Collection[])
     } catch (exception) {
-      this.handleError(exception);
+      this.handleError(exception)
     }
 
     return []
   }
 
   async export(collection: string): Promise<string> {
-    const id: string = uuidv4();
+    const id: string = uuidv4()
 
     try {
       await this.client.request(utilsExport(collection, 'csv', {}, { id }))
     } catch (exception) {
-      this.handleError(exception);
+      this.handleError(exception)
     }
 
     return id
@@ -65,20 +65,20 @@ export class DirectusClient {
     try {
       return await this.client.request(readAssetRaw(id))
     } catch (exception) {
-      this.handleError(exception);
+      this.handleError(exception)
       throw exception
     }
   }
 
   private handleError(error: any): void {
     if (this.isDirectusResponse(error)) {
-      console.error('Directus API Errors:', error.errors?.map(err => err.message).join(', ') ?? 'No error messages');
+      console.error('Directus API Errors:', error.errors?.map(err => err.message).join(', ') ?? 'No error messages')
     } else {
-      console.error('Unexpected Error:', error instanceof Error ? error.message : JSON.stringify(error));
+      console.error('Unexpected Error:', error instanceof Error ? error.message : JSON.stringify(error))
     }
   }
 
   private isDirectusResponse(error: any): error is DirectusResponse {
-    return 'errors' in error && Array.isArray(error.errors);
+    return 'errors' in error && Array.isArray(error.errors)
   }
 }

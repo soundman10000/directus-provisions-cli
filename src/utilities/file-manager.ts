@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import JSZip from 'jszip'
 import * as path from 'path'
+import { readFile } from 'fs/promises'
 
 export class FileManager {
   public async writeZipFile(zip: JSZip, fileName: string, outputPath: string): Promise<void> {
@@ -15,6 +16,19 @@ export class FileManager {
         })
         .once('error', reject)
     })
+  }
+
+  public async readZipFile(filePath: string): Promise<Buffer> {
+    try {
+      return await readFile(filePath)
+    } catch (error) {
+      if (error instanceof Error) {
+        process.stdout.write(error.message)
+      } else {
+        process.stdout.write('An unexpected error occurred:' + error)
+      }
+      throw error
+    }
   }
 
   public async streamToUint8Array(stream: ReadableStream): Promise<Uint8Array> {

@@ -10,6 +10,16 @@
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "args": ["export"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Import Command",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/dist/main.js",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "args": ["import"]
     }
   ]
 }
