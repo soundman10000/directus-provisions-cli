@@ -15,7 +15,6 @@ const command: CommandModule = {
       const collections = await collectionService
         .listCollections()
         .then(collections => exportService.exportCollections(collections))
-
         
       await exportService.downloadFiles(collections, path)
 
