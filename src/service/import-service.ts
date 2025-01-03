@@ -3,7 +3,7 @@ import { Resilience } from '../resilience/resilience'
 import { LoadingAnimation } from '../logger/loading-animation'
 import { FileManager } from '../utilities/file-manager'
 import JSZip from 'jszip'
-import * as path from 'path';
+import * as path from 'path'
 
 export class ImportService {
   private client: DirectusClient
@@ -20,34 +20,39 @@ export class ImportService {
 
   public async importCollections(filePath: string): Promise<void> {
     try {
-      const data = await this.fileManager.readZipFile(filePath).then(JSZip.loadAsync);
-  
-      for (const fileName in data.files) {
-        const file = data.files[fileName];
-        if (file.dir) {
-          continue;
-        }
-  
-        process.stdout.write(`Reading file ${fileName}\n`);
-        const content = await file.async('text');
-        const collection = path.parse(fileName).name;
-  
-        const blob = new Blob([content], { type: 'text/csv' });
-        const formData = new FormData();
-        formData.append('file', blob, fileName);
-  
-        this.loadingAnimation.start(`Uploading file ${fileName}`);
-        await this.client.upload(collection, formData);
-        this.loadingAnimation.stop();
+      const data = await this.fileManager.readZipFile(filePath).then(JSZip.loadAsync)
 
-        process.stdout.write(`Loaded file ${fileName}\n`);
+      for (const fileName of Object.keys(data.files)) {
+        await this.uploadFile(data.files[fileName], fileName)
       }
     } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error importing collections:', error.message);
-      } else {
-        console.error('An unexpected error occurred:', error);
-      }
+      this.handleError(error)
+    }
+  }
+  
+  private async uploadFile(file: JSZip.JSZipObject, fileName: string): Promise<void> {
+    if (file.dir) return
+
+    process.stdout.write(`Reading file ${fileName}\n`)
+    const content = await file.async('text')
+    const collection = path.parse(fileName).name
+
+    const blob = new Blob([content])
+    const formData = new FormData()
+    formData.append('file', blob, fileName)
+
+    this.loadingAnimation.start(`Uploading file ${fileName}`)
+    await this.resilience.execute(() => this.client.upload(collection, formData))
+    this.loadingAnimation.stop()
+
+    process.stdout.write(`Loaded file ${fileName}\n`)
+  }
+
+  private handleError(error: unknown): void {
+    if (error instanceof Error) {
+      console.error('Error importing collections:', error.message)
+    } else {
+      console.error('An unexpected error occurred:', error)
     }
   }
 }

@@ -17,7 +17,7 @@ export class Resilience {
         if (attempts >= this.retries) {
           throw error
         }
-        console.warn(`Attempt ${attempts} failed. Retrying...`)
+        process.stdout.write(`Attempt ${attempts} failed.\nRetrying...\n`)
         await this.delay(this.timeout)
       }
     }

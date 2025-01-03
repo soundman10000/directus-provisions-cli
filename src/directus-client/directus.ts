@@ -12,7 +12,6 @@ import { createDirectus,
 import dotenv from 'dotenv'
 import { DirectusResponse, Collection } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
-import { stdout } from 'process'
 
 dotenv.config()
 
@@ -40,7 +39,7 @@ export class DirectusClient {
       .with(staticToken(directusToken))
   }
 
-  async listItems(collection: string): Promise<any[]> {
+  public async listItems(collection: string): Promise<any[]> {
     try {
       return await this.client.request(readItems(collection))
     } catch (exception) {
@@ -50,7 +49,7 @@ export class DirectusClient {
     return []
   }
 
-  async readCollections(): Promise<Collection[]> {
+  public async readCollections(): Promise<Collection[]> {
     try {
       return await this.client.request(readCollections()).then(z => z as Collection[])
     } catch (exception) {
@@ -60,7 +59,7 @@ export class DirectusClient {
     return []
   }
 
-  async export(collection: string): Promise<string> {
+  public async export(collection: string): Promise<string> {
     const id: string = uuidv4()
     try {
       await this.client.request(utilsExport(collection, 'csv', {}, { id }))
@@ -82,19 +81,20 @@ export class DirectusClient {
 
   public async upload(collection: string, file: FormData): Promise<void> {
     try {
-      process.stdout.write('Uploading file\n');
-      await this.client.request(utilsImport(collection, file));
+      await this.client.request(utilsImport(collection, file))
     } catch (exception) {
-      this.handleError(exception);
-      throw exception;
+      this.handleError(exception)
+      throw exception
     }
   }
 
   private handleError(error: any): void {
     if (this.isDirectusResponse(error)) {
-      console.error('Directus API Errors:', error.errors?.map(err => err.message).join(', ') ?? 'No error messages')
+      const errorMessage = 'Directus API Errors: ' + (error.errors?.map(err => err.message).join(', ') || 'No error messages')
+      process.stdout.write('\n' + errorMessage + '\n')
     } else {
-      console.error('Unexpected Error:', error instanceof Error ? error.message : JSON.stringify(error))
+      const errorText = error instanceof Error ? error.message : JSON.stringify(error)
+      process.stdout.write('\n' + 'Unexpected Error: ' + errorText + '\n')
     }
   }
 

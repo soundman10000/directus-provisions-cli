@@ -7,7 +7,7 @@ const command: CommandModule = {
   handler: async (argv) => {
     const importService = new ImportService()
 
-    const path = "C:/users/jmalley/desktop/collections.zip"
+    const path = "C:/users/jmalley/desktop/button.zip"
 
     try {
       await importService.importCollections(path)
