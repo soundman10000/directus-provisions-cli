@@ -2,8 +2,15 @@ import * as fs from 'fs'
 import JSZip from 'jszip'
 import * as path from 'path'
 import { readFile } from 'fs/promises'
+import { Logger } from '../logger/logger'
 
 export class FileManager {
+  private logger: Logger
+  
+  constructor() {
+    this.logger = Logger.getInstance()
+  }
+
   public async writeZipFile(zip: JSZip, fileName: string, outputPath: string): Promise<void> {
     const zipFilePath = path.join(outputPath, fileName)
     
@@ -11,7 +18,7 @@ export class FileManager {
       zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
         .pipe(fs.createWriteStream(zipFilePath))
         .once('finish', () => {
-          process.stdout.write(`Zip file has been written to ${zipFilePath}\n`)
+          this.logger.log(`Zip file has been written to ${zipFilePath}`)
           resolve()
         })
         .once('error', reject)
@@ -22,11 +29,11 @@ export class FileManager {
     try {
       return await readFile(filePath)
     } catch (error) {
-      if (error instanceof Error) {
-        process.stdout.write(error.message)
-      } else {
-        process.stdout.write('An unexpected error occurred:' + error)
-      }
+      const msg = error instanceof Error
+        ? error.message
+        : JSON.stringify(error)
+
+      this.logger.logError(msg)
       throw error
     }
   }

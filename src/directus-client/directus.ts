@@ -12,11 +12,13 @@ import { createDirectus,
 import dotenv from 'dotenv'
 import { DirectusResponse, Collection } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
+import { Logger } from '../logger/logger'
 
 dotenv.config()
 
 export class DirectusClient {
   private static instance: DirectusClient
+  private logger: Logger
   private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>
 
   public static getInstance(): DirectusClient {
@@ -27,6 +29,8 @@ export class DirectusClient {
   }
 
   constructor() {
+    this.logger = Logger.getInstance()
+
     const directusUrl = process.env.DIRECTUS_URL
     const directusToken = process.env.DIRECTUS_TOKEN
 
@@ -91,10 +95,10 @@ export class DirectusClient {
   private handleError(error: any): void {
     if (this.isDirectusResponse(error)) {
       const errorMessage = 'Directus API Errors: ' + (error.errors?.map(err => err.message).join(', ') || 'No error messages')
-      process.stdout.write('\n' + errorMessage + '\n')
+      this.logger.logError(errorMessage)
     } else {
       const errorText = error instanceof Error ? error.message : JSON.stringify(error)
-      process.stdout.write('\n' + 'Unexpected Error: ' + errorText + '\n')
+      this.logger.logError('Unexpected Error: ' + errorText)
     }
   }
 

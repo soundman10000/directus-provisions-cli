@@ -1,5 +1,6 @@
 import { CommandModule } from 'yargs'
 import { CollectionService } from '../service/collection-service'
+import { Logger } from '../logger/logger'
 
 const command: CommandModule = {
   command: 'list [collection]',
@@ -13,13 +14,15 @@ const command: CommandModule = {
       })
   },
   handler: async (argv) => {
+    const logger  = Logger.getInstance()
     const collectionService = new CollectionService()
+    
     try {
       const items = await collectionService.listItems(argv.collection as string)
-      process.stdout.write(JSON.stringify(items, null, 2) + '\n')
+      logger.log(JSON.stringify(items, null, 2) + '\n')
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
-      process.stdout.write(`Command failed: ${msg}`)
+      logger.log(`Command failed: ${msg}`)
     } finally {
       process.exit(0)
     }

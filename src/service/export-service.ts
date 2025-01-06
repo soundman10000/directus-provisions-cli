@@ -2,10 +2,13 @@ import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
 import { LoadingAnimation } from '../logger/loading-animation'
 import { FileManager } from '../utilities/file-manager'
+import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
+import { delay } from '../utilities/utilities'
 
 export class ExportService {
   private client: DirectusClient
+  private logger: Logger
   private resilience: Resilience
   private loadingAnimation: LoadingAnimation
 
@@ -13,6 +16,7 @@ export class ExportService {
     this.client = DirectusClient.getInstance()
     this.resilience = new Resilience(3, 2000)
     this.loadingAnimation = new LoadingAnimation()
+    this.logger = Logger.getInstance()
   }
 
   async exportCollections(collections: string[]): Promise<{ collection: string, id: string }[]> {
@@ -20,14 +24,14 @@ export class ExportService {
     const fileIds: { collection: string, id: string }[] = []
     
     for (const collection of collections) {
-      process.stdout.write(`Exporting collection: ${collection}\n`)
+      this.logger.log(`Exporting collection: ${collection}`)
 
       const id = await this.resilience.execute(() => this.client.export(collection))
       fileIds.push({ collection, id })
     }
 
     this.loadingAnimation.start('Giving Directus a minute to catch up')
-    await this.delay(2000)
+    await delay(2000)
     this.loadingAnimation.stop()
 
     return fileIds
@@ -38,7 +42,7 @@ export class ExportService {
     const zip = new JSZip()
 
     for (const { collection, id } of collections) {
-      process.stdout.write(`Adding collection ${collection} to zip\n`)
+      this.logger.log(`Adding collection ${collection} to zip\n`)
 
       const file = await this.resilience
         .execute(() => this.client.download(id))
@@ -48,9 +52,5 @@ export class ExportService {
     }
 
     await fileManager.writeZipFile(zip, 'collections.zip', outputPath)
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
