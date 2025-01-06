@@ -9,12 +9,13 @@ import { createDirectus,
   staticToken,
   StaticTokenClient 
 } from '@directus/sdk'
-import dotenv from 'dotenv'
+
 import { DirectusResponse, Collection } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
 import { Logger } from '../logger/logger'
+import { config } from '../config/config'
 
-dotenv.config()
+
 
 export class DirectusClient {
   private static instance: DirectusClient
@@ -31,16 +32,9 @@ export class DirectusClient {
   constructor() {
     this.logger = Logger.getInstance()
 
-    const directusUrl = process.env.DIRECTUS_URL
-    const directusToken = process.env.DIRECTUS_TOKEN
-
-    if (!directusUrl || !directusToken) {
-      throw new Error('DIRECTUS_URL and DIRECTUS_TOKEN environment variables must be set')
-    }
-
-    this.client = createDirectus(directusUrl)
+    this.client = createDirectus(config.directusUrl)
       .with(rest())
-      .with(staticToken(directusToken))
+      .with(staticToken(config.directusToken))
   }
 
   public async listItems(collection: string): Promise<any[]> {
