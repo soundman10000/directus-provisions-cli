@@ -1,4 +1,3 @@
-import { LoadingAnimation } from './loading-animation'
 import colors from 'ansi-colors';
 
 export class Logger {

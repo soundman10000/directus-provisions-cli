@@ -13,8 +13,8 @@ export class ImportService {
   private fileManager: FileManager
   private logger: Logger
   
-  constructor() { 
-    this.client = DirectusClient.getInstance()
+  constructor(env: string) { 
+    this.client = DirectusClient.getInstance(env)
     this.logger = Logger.getInstance()
     this.resilience = new Resilience(3, 2000)
     this.loadingAnimation = new LoadingAnimation()

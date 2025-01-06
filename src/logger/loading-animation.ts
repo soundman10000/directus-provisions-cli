@@ -1,16 +1,8 @@
 import { Logger } from './logger'
 
 export class LoadingAnimation {
-  private static instance: LoadingAnimation
   private intervalId: NodeJS.Timeout | null = null
   logger: Logger
-
-  public static getInstance(): LoadingAnimation {
-    if (!this.instance) {
-      this.instance = new LoadingAnimation()
-    }
-    return this.instance
-  }
 
   constructor(){
     this.logger = Logger.getInstance()

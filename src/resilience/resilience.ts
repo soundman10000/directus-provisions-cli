@@ -1,10 +1,14 @@
+import { Logger } from '../logger/logger'
+
 export class Resilience {
   private retries: number
   private timeout: number
+  private logger: Logger
 
   constructor(retries: number = 3, timeout: number = 1000) {
     this.retries = retries
     this.timeout = timeout
+    this.logger = Logger.getInstance()
   }
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
@@ -17,7 +21,7 @@ export class Resilience {
         if (attempts >= this.retries) {
           throw error
         }
-        process.stdout.write(`Attempt ${attempts} failed.\nRetrying...\n`)
+        this.logger.logError(`Attempt ${attempts} failed.\nRetrying...`)
         await this.delay(this.timeout)
       }
     }

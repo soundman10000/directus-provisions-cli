@@ -12,8 +12,8 @@ export class ExportService {
   private resilience: Resilience
   private loadingAnimation: LoadingAnimation
 
-  constructor() {
-    this.client = DirectusClient.getInstance()
+  constructor(env: string) {
+    this.client = DirectusClient.getInstance(env)
     this.resilience = new Resilience(3, 2000)
     this.loadingAnimation = new LoadingAnimation()
     this.logger = Logger.getInstance()

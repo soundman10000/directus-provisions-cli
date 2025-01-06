@@ -13,24 +13,27 @@ import { createDirectus,
 import { DirectusResponse, Collection } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
 import { Logger } from '../logger/logger'
-import { config } from '../config/config'
-
-
+import { DirectusConfig } from '../config/config'
 
 export class DirectusClient {
   private static instance: DirectusClient
   private logger: Logger
   private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>
 
-  public static getInstance(): DirectusClient {
+  // The context of execution is for one environment
+  public static getInstance(env: string): DirectusClient {
     if (!DirectusClient.instance) {
-      DirectusClient.instance = new DirectusClient()
+      DirectusClient.instance = new DirectusClient(env)
     }
     return DirectusClient.instance
   }
 
-  constructor() {
+  constructor(env: string) {
     this.logger = Logger.getInstance()
+    
+    const config = DirectusConfig
+      .getInstance()
+      .getDirectusConfig(env)
 
     this.client = createDirectus(config.directusUrl)
       .with(rest())

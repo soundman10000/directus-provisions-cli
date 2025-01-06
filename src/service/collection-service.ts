@@ -7,8 +7,8 @@ export class CollectionService {
   private client: DirectusClient
   private logger: Logger
 
-  constructor() {
-    this.client = DirectusClient.getInstance()
+  constructor(env: string) {
+    this.client = DirectusClient.getInstance(env)
     this.logger = Logger.getInstance()
   }
 

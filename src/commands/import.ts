@@ -2,17 +2,33 @@ import { CommandModule } from "yargs"
 import { ImportService } from '../service/import-service'
 import { Logger } from '../logger/logger'
 
-const command: CommandModule = {
-  command: 'import',
+interface CommandArgs {
+  env: string
+  path: string
+}
+
+const command: CommandModule<{}, CommandArgs> = {
+  command: 'import [env] [path]',
   describe: 'Import Client Directus Provisions',
-  handler: async (argv) => {
-    const importService = new ImportService()
+  builder: (yargs) => {
+    return yargs
+      .positional('env', {
+        describe: 'The environment to use',
+        type: 'string',
+        demandOption: true
+      })
+      .positional('path', {
+        describe: 'Path of the file',
+        type: 'string',
+        demandOption: true
+      })
+  },
+  handler: async (argv: CommandArgs) => {
     const logger = Logger.getInstance()
-
-    const path = "C:/users/jmalley/desktop/button.zip"
-
+    const importService = new ImportService(argv.env)
+    
     try {
-      await importService.importCollections(path)
+      await importService.importCollections(argv.path)
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
       logger.logError(`Command failed: ${msg}`)
