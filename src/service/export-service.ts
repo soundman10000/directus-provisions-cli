@@ -5,16 +5,17 @@ import { CollectionFields } from '../types/directus'
 import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
 
-
 export class ExportService {
   private client: DirectusClient
   private logger: Logger
   private resilience: Resilience
+  private fileManager: FileManager
 
   constructor(env: string) {
     this.client = DirectusClient.getInstance(env)
     this.resilience = new Resilience(3, 2000)
     this.logger = Logger.getInstance()
+    this.fileManager = FileManager.getInstance()
   }
 
   async exportCollections(collections: CollectionFields[]): Promise<{ collection: string, id: string }[]> {
@@ -30,7 +31,6 @@ export class ExportService {
   }
 
   async downloadFiles(collections: { collection: string, id: string }[], outputPath: string): Promise<void> {
-    const fileManager = new FileManager()
     const zip = new JSZip()
     
     for (const { collection, id } of collections) {
@@ -38,11 +38,11 @@ export class ExportService {
 
       const file = await this.resilience
         .execute(() => this.client.download(id))
-        .then(fileManager.streamToUint8Array)
+        .then(this.fileManager.streamToUint8Array)
 
       zip.file(`${collection}.csv`, file)
     }
 
-    await fileManager.writeZipFile(zip, 'collections.zip', outputPath)
+    await this.fileManager.writeZipFile(zip, 'collections.zip', outputPath)
   }
 }

@@ -17,8 +17,7 @@ export class ImportService {
     this.client = DirectusClient.getInstance(env)
     this.logger = Logger.getInstance()
     this.loadingAnimation = new LoadingAnimation()
-    this.fileManager = new FileManager()
-
+    this.fileManager = FileManager.getInstance()
     // Importing can take a long time.
     this.resilience = new Resilience(1, 100000)
   }

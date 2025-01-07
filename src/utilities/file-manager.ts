@@ -6,7 +6,15 @@ import { Logger } from '../logger/logger'
 
 export class FileManager {
   private logger: Logger
-  
+  private static instance: FileManager
+
+  public static getInstance(): FileManager {
+    if (!FileManager.instance) {
+      FileManager.instance = new FileManager()
+    }
+    return FileManager.instance
+  }
+
   constructor() {
     this.logger = Logger.getInstance()
   }
