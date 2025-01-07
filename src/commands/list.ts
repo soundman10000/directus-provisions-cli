@@ -24,7 +24,6 @@ const command: CommandModule<{}, CommandArgs> = {
       })
   },
   handler: async (argv: CommandArgs) => {
-    console.log(argv)
     const logger = Logger.getInstance()
     const collectionService = new CollectionService(argv.env)
     

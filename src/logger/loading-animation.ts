@@ -12,14 +12,14 @@ export class LoadingAnimation {
     let dots = ''
     this.intervalId = setInterval(() => {
       dots = dots + '.'
-      this.logger.log(`\r${input}${dots}`)
+      this.logger.log(`\r${input}${dots}`, false)
     }, 250)
   }
 
   stop() {
     if (this.intervalId) {
       clearInterval(this.intervalId)
-      this.logger.log('\n')
+      this.logger.log('\n', false)
     }
   }
 }

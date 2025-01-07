@@ -20,9 +20,6 @@
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "args": ["import"],
-      "env": {
-        "NODE_NO_WARNINGS": "1"
-      }
     }
   ]
 }

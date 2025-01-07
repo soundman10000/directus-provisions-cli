@@ -10,11 +10,15 @@ export class Logger {
     return Logger.instance
   }
 
-  public log(message: string): void {
-    process.stdout.write(`${message}\n`)
+  public log(message: string, newline: boolean = true): void {
+    process.stdout.write(`${message}${newline ? '\n' : ''}`);
   }
 
   public logError(message: string): void {
     process.stdout.write(colors.red(`${message}\n`))
+  }
+
+  public logSuccess(message: string): void {
+    process.stdout.write(colors.green(`${message}\n`))
   }
 }

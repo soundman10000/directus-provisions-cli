@@ -21,7 +21,8 @@ export class Resilience {
         if (attempts >= this.retries) {
           throw error
         }
-        this.logger.logError(`Attempt ${attempts} failed.\nRetrying...`)
+        this.logger.logError(`Attempt ${attempts} failed.`)
+        this.logger.log('Retrying...')
         await this.delay(this.timeout)
       }
     }

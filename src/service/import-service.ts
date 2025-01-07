@@ -48,8 +48,7 @@ export class ImportService {
 
     const collection = path.parse(fileName).name
     const contentBlob = await file.async('text')
-      .then(x => [x])
-      .then(z => new Blob(z, { type: 'text/csv' }))
+      .then(z => new Blob([z], { type: 'text/csv' }))
 
     const formData = new FormData()
     formData.append('file', contentBlob, fileName)

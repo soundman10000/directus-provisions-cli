@@ -1,38 +1,30 @@
 import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
-import { LoadingAnimation } from '../logger/loading-animation'
 import { FileManager } from '../utilities/file-manager'
+import { CollectionFields } from '../types/directus'
 import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
-import { delay } from '../utilities/utilities'
+
 
 export class ExportService {
   private client: DirectusClient
   private logger: Logger
   private resilience: Resilience
-  private loadingAnimation: LoadingAnimation
 
   constructor(env: string) {
     this.client = DirectusClient.getInstance(env)
     this.resilience = new Resilience(3, 2000)
-    this.loadingAnimation = new LoadingAnimation()
     this.logger = Logger.getInstance()
   }
 
-  async exportCollections(collections: string[]): Promise<{ collection: string, id: string }[]> {
-    
+  async exportCollections(collections: CollectionFields[]): Promise<{ collection: string, id: string }[]> {
     const fileIds: { collection: string, id: string }[] = []
-    
     for (const collection of collections) {
-      this.logger.log(`Exporting collection: ${collection}`)
+      this.logger.log(`Exporting collection: ${collection.name}`)
 
       const id = await this.resilience.execute(() => this.client.export(collection))
-      fileIds.push({ collection, id })
+      fileIds.push({ collection: collection.name, id })
     }
-
-    this.loadingAnimation.start('Giving Directus a minute to catch up')
-    await delay(2000)
-    this.loadingAnimation.stop()
 
     return fileIds
   }
@@ -40,9 +32,9 @@ export class ExportService {
   async downloadFiles(collections: { collection: string, id: string }[], outputPath: string): Promise<void> {
     const fileManager = new FileManager()
     const zip = new JSZip()
-
+    
     for (const { collection, id } of collections) {
-      this.logger.log(`Adding collection ${collection} to zip\n`)
+      this.logger.log(`Adding collection ${collection} to zip`)
 
       const file = await this.resilience
         .execute(() => this.client.download(id))

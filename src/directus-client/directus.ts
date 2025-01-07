@@ -7,10 +7,11 @@ import { createDirectus,
   utilsImport,
   readAssetRaw,
   staticToken,
-  StaticTokenClient 
+  StaticTokenClient, 
+  readFields
 } from '@directus/sdk'
 
-import { DirectusResponse, Collection } from '../types/directus'
+import { DirectusResponse, Collection, Field, CollectionFields } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
 import { Logger } from '../logger/logger'
 import { DirectusConfig } from '../config/config'
@@ -60,10 +61,23 @@ export class DirectusClient {
     return []
   }
 
-  public async export(collection: string): Promise<string> {
-    const id: string = uuidv4()
+  public async readFields(): Promise<Field[]> {
     try {
-      await this.client.request(utilsExport(collection, 'csv', {}, { id }))
+      return await this.client.request(readFields()).then(z => z as Field[])
+    } catch (exception) {
+      this.handleError(exception)
+    }
+
+    return []
+  }
+
+  public async export(collection: CollectionFields): Promise<string> {
+    const id: string = uuidv4()
+    const query = { fields: collection.fields }
+    try {
+      await this.client.request(utilsExport(collection.name, 'csv', {
+        fields: query.fields
+      }, { id }))
     } catch (exception) {
       this.handleError(exception)
     }
@@ -91,6 +105,7 @@ export class DirectusClient {
 
   private handleError(error: any): void {
     if (this.isDirectusResponse(error)) {
+      this.logger.log("")
       const errorMessage = 'Directus API Errors: ' + (error.errors?.map(err => err.message).join(', ') || 'No error messages')
       this.logger.logError(errorMessage)
     } else {

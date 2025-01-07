@@ -1,7 +1,9 @@
 import { CommandModule } from "yargs"
 import { ExportService } from '../service/export-service'
-import { CollectionService } from '../service/collection-service'
+import { FieldService } from '../service/field-service'
 import { Logger } from '../logger/logger'
+import { delay } from '../utilities/utilities'
+import { LoadingAnimation } from "../logger/loading-animation"
 
 interface CommandArgs {
   env: string
@@ -25,16 +27,23 @@ const command: CommandModule<{}, CommandArgs> = {
       })
   },
   handler: async (argv: CommandArgs) => {
-    const collectionService = new CollectionService(argv.env)
+    const collectionService = new FieldService(argv.env)
     const exportService = new ExportService(argv.env)
     const logger  = Logger.getInstance()
+    const loadingAnimation = new LoadingAnimation()
     
     try {
-      const collections = await collectionService
-        .listCollections()
-        .then(collections => exportService.exportCollections(collections))
+      const fields = await collectionService
+        .listFields()
+        .then(x => exportService.exportCollections(x))
         
-      await exportService.downloadFiles(collections, argv.path)
+      loadingAnimation.start('Giving Directus a minute to catch up')
+      await delay(2000)
+      loadingAnimation.stop()
+      
+      await exportService.downloadFiles(fields, argv.path)
+
+      logger.logSuccess('Export Successfully Completed')
 
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
