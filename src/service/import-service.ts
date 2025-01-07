@@ -16,9 +16,11 @@ export class ImportService {
   constructor(env: string) { 
     this.client = DirectusClient.getInstance(env)
     this.logger = Logger.getInstance()
-    this.resilience = new Resilience(3, 2000)
     this.loadingAnimation = new LoadingAnimation()
     this.fileManager = new FileManager()
+
+    // Importing can take a long time.
+    this.resilience = new Resilience(1, 100000)
   }
 
   public async importCollections(filePath: string): Promise<void> {
@@ -35,7 +37,7 @@ export class ImportService {
         ? 'Error importing collections:' + error.message 
         : JSON.stringify(error)
     
-      this.logger.logError(msg)
+      this.logger.logError('\n' + msg)
     }
   }
   
