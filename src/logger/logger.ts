@@ -1,4 +1,4 @@
-import colors from 'ansi-colors';
+import colors from 'ansi-colors'
 
 export class Logger {
   private static instance: Logger 
@@ -11,7 +11,7 @@ export class Logger {
   }
 
   public log(message: string, newline: boolean = true): void {
-    process.stdout.write(`${message}${newline ? '\n' : ''}`);
+    process.stdout.write(`${message}${newline ? '\n' : ''}`)
   }
 
   public logError(message: string): void {

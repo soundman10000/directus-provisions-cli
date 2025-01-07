@@ -71,29 +71,25 @@ export interface Collection {
 }
 
 export interface Field {
-  id: number;
-  collection: string;
-  field: string;
-  special: string[];
-
-  interface: string;
-  options: Record<string, any>;
-
-  display: string;
-  display_options: string;
-  readonly: boolean;
-  hidden: boolean;
-  sort: number;
-  width: 'half' | 'half-left' | 'half-right' | 'half-space' | 'full' | 'fill';
-
+  id: number
+  collection: string
+  field: string
+  special: string[]
+  interface: string
+  options: Record<string, any>
+  display: string
+  display_options: string
+  readonly: boolean
+  hidden: boolean
+  sort: number
+  width: 'half' | 'half-left' | 'half-right' | 'half-space' | 'full' | 'fill'
   translations: {
-    [language: string]: string;
-  }[];
-
-  note?: string;
-  required: boolean;
-  group?: number;
-  validation_message?: string;
+    [language: string]: string
+  }[]
+  note?: string
+  required: boolean
+  group?: number
+  validation_message?: string
 }
 
 export interface CollectionFields {

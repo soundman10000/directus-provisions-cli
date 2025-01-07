@@ -43,11 +43,11 @@ const filterSystemFields = (collection: Field[]): Field[] =>
 const toModel = (data: Field[]): CollectionFields[] => {
   const groupedData = data.reduce<GroupedFields>((acc, { collection, field }) => {
     if (!acc[collection]) {
-      acc[collection] = { name: collection, fields: [] };
+      acc[collection] = { name: collection, fields: [] }
     }
-    acc[collection].fields.push(field);
-    return acc;
-  }, {});
+    acc[collection].fields.push(field)
+    return acc
+  }, {})
 
   return Object.values(groupedData) as CollectionFields[]
 }
