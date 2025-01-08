@@ -22,9 +22,6 @@ export class CollectionService {
   }
 }
 
-const filterSystemCollections = (collection: Collection[]): Collection[] => 
-  collection.filter(z => !z.collection.startsWith('directus_'))
-
 const filterFolders = (collection: Collection[]): Collection[] => 
   collection.filter(z => z.schema != null)
 
@@ -32,7 +29,6 @@ const pullCollection = (collection: Collection[]): string[] =>
   collection.map(z => z.collection)
 
 const toCollectionsModel = pipe(
-  filterSystemCollections,
   filterFolders,
   pullCollection
 ) as (collections: Collection[]) => string[]

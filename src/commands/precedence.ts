@@ -22,7 +22,8 @@ const command: CommandModule<{}, CommandArgs> = {
     const service = new PrecedenceService(argv.env)
 
     try {
-      await service.listCollectionsPrecedence()
+      var collections = await service.listCollectionsPrecedence()
+      logger.log(JSON.stringify(collections, null, 2))
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
       logger.logError(`Command failed: ${msg}`)

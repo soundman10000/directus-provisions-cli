@@ -2,6 +2,7 @@ import { DirectusClient } from '../directus-client/directus'
 import { Resilience } from '../resilience/resilience'
 import { LoadingAnimation } from '../logger/loading-animation'
 import { FileManager } from '../utilities/file-manager'
+import { PrecedenceService } from './precedence-service'
 import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
 import * as path from 'path'
@@ -12,31 +13,42 @@ export class ImportService {
   private loadingAnimation: LoadingAnimation
   private fileManager: FileManager
   private logger: Logger
+  private precedenceService: PrecedenceService
   
   constructor(env: string) { 
     this.client = DirectusClient.getInstance(env)
     this.logger = Logger.getInstance()
     this.loadingAnimation = new LoadingAnimation()
+    this.precedenceService = new PrecedenceService(env)
     this.fileManager = FileManager.getInstance()
     // Importing can take a long time.
-    this.resilience = new Resilience(1, 100000)
+    // -1 means no timeout
+    this.resilience = new Resilience(1, -1)
   }
 
   public async importCollections(filePath: string): Promise<void> {
     try {
       const data = await this.fileManager
         .readZipFile(filePath)
-        .then(JSZip.loadAsync)
-
-      for (const fileName of Object.keys(data.files)) {
-        await this.uploadFile(data.files[fileName], fileName)
+        .then(JSZip.loadAsync);
+  
+      const order = await this.precedenceService.listCollectionsPrecedence();
+  
+      for (const collection of order) {
+        const filename = `${collection}.csv`;
+        const file = data.files[filename];
+        if (file) {
+          await this.uploadFile(file, collection);
+        } else {
+          this.logger.logError(`File ${filename} not found in the archive.`);
+        }
       }
     } catch (error) {
       const msg = error instanceof Error 
-        ? 'Error importing collections:' + error.message 
-        : JSON.stringify(error)
-    
-      this.logger.logError('\n' + msg)
+        ? 'Error importing collections: ' + error.message 
+        : JSON.stringify(error);
+  
+      this.logger.logError('\n' + msg);
     }
   }
   
@@ -45,7 +57,7 @@ export class ImportService {
       return
     }
 
-    this.logger.log(`Reading file ${fileName}`)
+    this.logger.log(`Reading file ${fileName}.csv`)
 
     const collection = path.parse(fileName).name
     const contentBlob = await file.async('text')
@@ -54,8 +66,7 @@ export class ImportService {
     const formData = new FormData()
     formData.append('file', contentBlob, fileName)
 
-
-    this.loadingAnimation.start(`Uploading file ${fileName}`)
+    this.loadingAnimation.start(`Uploading file ${fileName}..`)
     await this.resilience.execute(() => this.client.upload(collection, formData))
     this.loadingAnimation.stop()
 

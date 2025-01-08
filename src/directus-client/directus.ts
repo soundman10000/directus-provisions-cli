@@ -51,24 +51,31 @@ export class DirectusClient {
     return []
   }
 
-  public async readCollections(): Promise<Collection[]> {
+  public async readCollections(includeSystem: boolean = false): Promise<Collection[]> {
     try {
-      return await this.client.request(readCollections()).then(z => z as Collection[])
+      const allCollections = await this.client.request(readCollections());
+      
+      return includeSystem 
+        ? allCollections as Collection[]
+        : allCollections.filter(collection => !collection.collection.startsWith('directus_')) as Collection[];
     } catch (exception) {
-      this.handleError(exception)
+      this.handleError(exception);
+      return [];
     }
-
-    return []
   }
 
-  public async readFields(): Promise<Field[]> {
+  public async readFields(includeSystem: boolean = false): Promise<Field[]> {
     try {
-      return await this.client.request(readFields()).then(z => z as Field[])
-    } catch (exception) {
-      this.handleError(exception)
-    }
+      const allFields = await this.client.request(readFields());
+      
+      return includeSystem 
+        ? allFields as Field[]
+        : allFields.filter(field => !field.collection.startsWith('directus_')) as Field[];
 
-    return []
+    } catch (exception) {
+      this.handleError(exception);
+      return []; 
+    }
   }
 
   public async export(collection: CollectionFields): Promise<string> {

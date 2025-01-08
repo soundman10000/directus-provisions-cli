@@ -29,6 +29,8 @@ const command: CommandModule<{}, CommandArgs> = {
     
     try {
       await importService.importCollections(argv.path)
+
+      logger.logSuccess('Import Successfully Completed')
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'An unknown error occurred'
       logger.logError(`Command failed: ${msg}`)

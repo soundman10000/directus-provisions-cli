@@ -15,7 +15,11 @@ export class Resilience {
     let attempts = 0
     while (attempts < this.retries) {
       try {
-        return await this.withTimeout(fn)
+        if (this.timeout === -1) {
+          return await fn()
+        } else {
+          return await this.withTimeout(fn)
+        }
       } catch (error) {
         attempts++
         if (attempts >= this.retries) {
