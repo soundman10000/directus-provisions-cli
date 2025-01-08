@@ -74,22 +74,50 @@ export interface Field {
   id: number
   collection: string
   field: string
+  type: string
+  schema: FieldSchema | null
+  meta: FieldMeta | null
+}
+
+interface FieldSchema {
+  name: string
+  table: string
+  data_type: string
+  default_value: null
+  generation_expression: null
+  max_length: number
+  numeric_precision: null
+  numeric_scale: null
+  is_generated: boolean
+  is_nullable: boolean
+  is_unique: boolean
+  is_indexed: boolean
+  is_primary_key: boolean
+  has_auto_increment: boolean
+  foreign_key_column: string | null
+  foreign_key_table: string | null
+}
+
+interface FieldMeta {
+  id: number
+  collection: string
+  field: string
   special: string[]
   interface: string
-  options: Record<string, any>
-  display: string
-  display_options: string
+  options: null
+  display: null
+  display_options: null
   readonly: boolean
   hidden: boolean
   sort: number
-  width: 'half' | 'half-left' | 'half-right' | 'half-space' | 'full' | 'fill'
-  translations: {
-    [language: string]: string
-  }[]
-  note?: string
+  width: string
+  translations: null
+  note: null
+  conditions: null
   required: boolean
-  group?: number
-  validation_message?: string
+  group: null
+  validation: null
+  validation_message: null
 }
 
 export interface CollectionFields {
