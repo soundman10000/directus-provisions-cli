@@ -9,7 +9,7 @@
     "build": "tsc"
   },
   "bin": {
-    "directus-cli": "./dist/main.js"
+    "directus-provisions-cli": "./dist/main.js"
   },
   "keywords": [],
   "author": "",
