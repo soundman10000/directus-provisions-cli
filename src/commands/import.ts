@@ -1,7 +1,5 @@
 import { CommandModule } from "yargs"
-import { ImportService } from '../service/import-service'
-import { CollectionService } from "../service/collection-service"
-import { Logger } from '../logger/logger'
+import Container from "../di/container"
 
 interface CommandArgs {
   env: string
@@ -25,12 +23,14 @@ const command: CommandModule<{}, CommandArgs> = {
       })
   },
   handler: async (argv: CommandArgs) => {
-    const logger = Logger.getInstance()
-    const importService = new ImportService(argv.env)
-    const precedenceService = new CollectionService(argv.env)
+    const container = Container.getInstance(argv.env) 
+    const collectionService = container.getCollectionService()
+    const logger = container.getLogger()
+    const importService = container.getImportService()
     
     try {
-      await precedenceService
+
+      await collectionService
         .listCollectionsPrecedence()
         .then(o => importService.importCollections(argv.path, o))
 

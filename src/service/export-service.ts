@@ -6,16 +6,22 @@ import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
 
 export class ExportService {
+  static instance: ExportService
   private client: DirectusClient
   private logger: Logger
-  private resilience: Resilience
   private fileManager: FileManager
 
-  constructor(env: string) {
-    this.client = DirectusClient.getInstance(env)
-    this.resilience = new Resilience(3, 2000)
-    this.logger = Logger.getInstance()
-    this.fileManager = FileManager.getInstance()
+  public static getInstance(client: DirectusClient, logger: Logger, fileManager: FileManager): ExportService {
+    if (!ExportService.instance) {
+      ExportService.instance = new ExportService(client, logger, fileManager)
+    }
+    return ExportService.instance
+  }
+
+  private constructor(client: DirectusClient, logger: Logger, fileManager: FileManager) {
+    this.client = client
+    this.logger = logger
+    this.fileManager = fileManager
   }
 
   async exportCollections(collections: CollectionFields[]): Promise<{ collection: string, id: string }[]> {
@@ -23,7 +29,8 @@ export class ExportService {
     for (const collection of collections) {
       this.logger.log(`Exporting collection: ${collection.name}`)
 
-      const id = await this.resilience.execute(() => this.client.export(collection))
+      var resilience = new Resilience(3, 2000)
+      const id = await resilience.execute(() => this.client.export(collection))
       fileIds.push({ collection: collection.name, id })
     }
 
@@ -36,8 +43,8 @@ export class ExportService {
     for (const { collection, id } of collections) {
       this.logger.log(`Adding collection ${collection} to zip`)
 
-      const file = await this.resilience
-        .execute(() => this.client.download(id))
+      var resilience = new Resilience(3, 2000)
+      const file = await resilience.execute(() => this.client.download(id))
         .then(this.fileManager.streamToUint8Array)
 
       zip.file(`${collection}.csv`, file)

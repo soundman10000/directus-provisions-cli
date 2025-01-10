@@ -1,6 +1,5 @@
 import { CommandModule } from 'yargs'
-import { CollectionService } from '../service/collection-service'
-import { Logger } from '../logger/logger'
+import Container from '../di/container'
 
 interface CommandArgs {
   env: string
@@ -24,8 +23,9 @@ const command: CommandModule<{}, CommandArgs> = {
       })
   },
   handler: async (argv: CommandArgs) => {
-    const logger = Logger.getInstance()
-    const collectionService = new CollectionService(argv.env)
+    const container = Container.getInstance(argv.env)
+    const collectionService = container.getCollectionService()
+    const logger = container.getLogger()
     
     try {
       const items = await collectionService.listItems(argv.collection)

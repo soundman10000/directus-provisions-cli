@@ -4,26 +4,29 @@ import { LoadingAnimation } from '../logger/loading-animation'
 import { FileManager } from '../utilities/file-manager'
 import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
-import * as path from 'path'
 
 export class ImportService {
-  private client: DirectusClient
-  private resilience: Resilience
-  private fileManager: FileManager
-  private logger: Logger
+  private _client: DirectusClient
+  private _fileManager: FileManager
+  private _logger: Logger
+  static instance: ImportService
   
-  constructor(env: string) { 
-    this.client = DirectusClient.getInstance(env)
-    this.logger = Logger.getInstance()
-    this.fileManager = FileManager.getInstance()
-    // Importing can take a long time.
-    // -1 means no timeout
-    this.resilience = new Resilience(1, -1)
+  public static getInstance(client: DirectusClient, logger: Logger, fileManager: FileManager): ImportService {
+    if (!ImportService.instance) {
+      ImportService.instance = new ImportService(client, logger, fileManager)
+    }
+    return ImportService.instance
+  }
+
+  private constructor(client: DirectusClient, logger: Logger, fileManager: FileManager) { 
+    this._client = client
+    this._logger = logger
+    this._fileManager = fileManager
   }
 
   public async importCollections(filePath: string, collectionOrder: string[]): Promise<void> {
     try {
-      const data = await this.fileManager
+      const data = await this._fileManager
         .readZipFile(filePath)
         .then(JSZip.loadAsync)
   
@@ -33,7 +36,7 @@ export class ImportService {
         if (file) {
           await this.uploadFile(file, collection)
         } else {
-          this.logger.logError(`File ${filename} not found in the archive.`)
+          this._logger.logError(`File ${filename} not found in the archive.`)
         }
       }
     } catch (error) {
@@ -41,7 +44,7 @@ export class ImportService {
         ? 'Error importing collections: ' + error.message 
         : JSON.stringify(error)
   
-      this.logger.logError('\n' + msg)
+      this._logger.logError('\n' + msg)
     }
   }
   
@@ -50,7 +53,7 @@ export class ImportService {
       return
     }
 
-    this.logger.log(`Reading file ${collection}.csv`)
+    this._logger.log(`Reading file ${collection}.csv`)
 
     const contentBlob = await file.async('text')
       .then(z => new Blob([z], { type: 'text/csv' }))
@@ -59,13 +62,15 @@ export class ImportService {
     formData.append('file', contentBlob, collection)
 
     const loadingAnimation = new LoadingAnimation()
+    // Importing can take a long time.
+    const resilience = new Resilience(1, -1)
     try {
       loadingAnimation.start(`Uploading collection ${collection}..`)
-      await this.resilience.execute(() => this.client.upload(collection, formData))
+      await resilience.execute(() => this._client.upload(collection, formData))
     } finally {
       loadingAnimation.stop()  
     }
 
-    this.logger.log(`Loaded collection ${collection}`)
+    this._logger.log(`Loaded collection ${collection}`)
   }
 }

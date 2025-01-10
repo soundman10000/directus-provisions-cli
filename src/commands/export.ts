@@ -1,9 +1,7 @@
 import { CommandModule } from "yargs"
-import { ExportService } from '../service/export-service'
-import { FieldService } from '../service/field-service'
-import { Logger } from '../logger/logger'
 import { delay } from '../utilities/utilities'
 import { LoadingAnimation } from "../logger/loading-animation"
+import Container from "../di/container"
 
 interface CommandArgs {
   env: string
@@ -27,12 +25,14 @@ const command: CommandModule<{}, CommandArgs> = {
       })
   },
   handler: async (argv: CommandArgs) => {
-    const collectionService = new FieldService(argv.env)
-    const exportService = new ExportService(argv.env)
-    const logger  = Logger.getInstance()
+    const container = Container.getInstance(argv.env)
+    const fieldsService = container.getFieldService()
+    const exportService = container.getExportService()
+    const logger  = container.getLogger()
     
     try {
-      const fields = await collectionService
+      
+      const fields = await fieldsService
         .findCollectionFields()
         .then(x => exportService.exportCollections(x))
     

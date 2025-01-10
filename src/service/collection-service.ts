@@ -3,9 +3,17 @@ import { toCollectionsModel, orderCollectionsByForeignKey } from './collection-s
 
 export class CollectionService {
   private client: DirectusClient
+  static instance: CollectionService
   
-  constructor(env: string) {
-    this.client = DirectusClient.getInstance(env)
+  public static getInstance(client: DirectusClient): CollectionService {
+    if (!CollectionService.instance) {
+      CollectionService.instance = new CollectionService(client)
+    }
+    return CollectionService.instance
+  }
+
+  private constructor(client: DirectusClient) {
+    this.client = client
   }
 
   async listCollections(): Promise<string[]> {

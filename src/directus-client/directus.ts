@@ -22,24 +22,21 @@ export class DirectusClient {
   private logger: Logger
   private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>
 
-  // The context of execution is for one environment
-  public static getInstance(env: string): DirectusClient {
+  public static getInstance(env: string, config: DirectusConfig): DirectusClient {
     if (!DirectusClient.instance) {
-      DirectusClient.instance = new DirectusClient(env)
+      DirectusClient.instance = new DirectusClient(env, config)
     }
     return DirectusClient.instance
   }
 
-  constructor(env: string) {
+  constructor(env: string, config: DirectusConfig) {
     this.logger = Logger.getInstance()
     
-    const config = DirectusConfig
-      .getInstance()
-      .getDirectusConfig(env)
+    const clientConfig = config.getDirectusConfig(env)
 
-    this.client = createDirectus(config.directusUrl)
+    this.client = createDirectus(clientConfig.directusUrl)
       .with(rest())
-      .with(staticToken(config.directusToken))
+      .with(staticToken(clientConfig.directusToken))
   }
 
   public async listItems(collection: string): Promise<any[]> {
