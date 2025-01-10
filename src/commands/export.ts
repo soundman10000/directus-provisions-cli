@@ -1,7 +1,7 @@
+import LoadingAnimation from "../logger/loading-animation"
+import Container from "../di/container"
 import { CommandModule } from "yargs"
 import { delay } from '../utilities/utilities'
-import { LoadingAnimation } from "../logger/loading-animation"
-import Container from "../di/container"
 
 interface CommandArgs {
   env: string
@@ -31,7 +31,7 @@ const command: CommandModule<{}, CommandArgs> = {
     const logger  = container.getLogger()
     
     try {
-      
+
       const fields = await fieldsService
         .findCollectionFields()
         .then(x => exportService.exportCollections(x))

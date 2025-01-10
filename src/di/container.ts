@@ -1,11 +1,11 @@
-import { DirectusClient } from '../directus-client/directus'
-import { FileManager } from '../utilities/file-manager'
-import { ExportService } from '../service/export-service'
-import { Logger } from '../logger/logger'
-import { CollectionService } from '../service/collection-service'
-import { DirectusConfig } from '../config/config'
-import { FieldService } from '../service/field-service'
-import { ImportService } from '../service/import-service'
+import CollectionService from '../service/collection-service'
+import FieldService from '../service/field-service'
+import ImportService from '../service/import-service'
+import ExportService from '../service/export-service'
+import FileManager from '../utilities/file-manager'
+import DirectusClient from '../directus-client/directus'
+import Logger from '../logger/logger'
+import { ProvisionConfig } from '../config/config'
 
 class Container {
   private static instance: Container
@@ -22,8 +22,8 @@ class Container {
     return Container.instance
   }
 
-  public getConfig(): DirectusConfig {
-    return DirectusConfig.getInstance()
+  public getConfig(): ProvisionConfig {
+    return ProvisionConfig.getInstance()
   }
 
   public getDirectusClient(env: string): DirectusClient {
@@ -31,7 +31,7 @@ class Container {
   }
 
   public getFileManager(): FileManager {
-    return FileManager.getInstance()
+    return FileManager.getInstance(this.getLogger())
   }
 
   public getLogger(): Logger {

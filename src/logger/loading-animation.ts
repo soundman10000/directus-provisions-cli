@@ -1,6 +1,6 @@
-import { Logger } from './logger'
+import Logger from './logger'
 
-export class LoadingAnimation {
+class LoadingAnimation {
   private intervalId: NodeJS.Timeout | null = null
   logger: Logger
 
@@ -25,3 +25,5 @@ export class LoadingAnimation {
     }
   }
 }
+
+export default LoadingAnimation

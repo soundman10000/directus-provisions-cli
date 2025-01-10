@@ -1,9 +1,9 @@
-import { DirectusClient } from '../directus-client/directus'
+import DirectusClient from '../directus-client/directus'
 import { toCollectionsModel, orderCollectionsByForeignKey } from './collection-service.model'
 
-export class CollectionService {
-  private client: DirectusClient
+class CollectionService {
   static instance: CollectionService
+  private _client: DirectusClient
   
   public static getInstance(client: DirectusClient): CollectionService {
     if (!CollectionService.instance) {
@@ -13,18 +13,20 @@ export class CollectionService {
   }
 
   private constructor(client: DirectusClient) {
-    this.client = client
+    this._client = client
   }
 
   async listCollections(): Promise<string[]> {
-    return await this.client.readCollections().then(toCollectionsModel)
+    return await this._client.readCollections().then(toCollectionsModel)
   }
 
   async listItems(collection: string): Promise<any[]> {
-    return await this.client.listItems(collection)
+    return await this._client.listItems(collection)
   }
 
   async listCollectionsPrecedence(): Promise<string[]> {
-    return await this.client.readFields().then(orderCollectionsByForeignKey)
+    return await this._client.readFields().then(orderCollectionsByForeignKey)
   }
 }
+
+export default CollectionService

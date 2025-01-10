@@ -1,22 +1,22 @@
-import * as fs from 'fs'
+import Logger from '../logger/logger'
 import JSZip from 'jszip'
+import * as fs from 'fs'
 import * as path from 'path'
 import { readFile } from 'fs/promises'
-import { Logger } from '../logger/logger'
 
-export class FileManager {
-  private logger: Logger
+class FileManager {
+  private _logger: Logger
   private static instance: FileManager
 
-  public static getInstance(): FileManager {
+  public static getInstance(logger: Logger): FileManager {
     if (!FileManager.instance) {
-      FileManager.instance = new FileManager()
+      FileManager.instance = new FileManager(logger)
     }
     return FileManager.instance
   }
 
-  constructor() {
-    this.logger = Logger.getInstance()
+  constructor(logger: Logger) {
+    this._logger = logger
   }
 
   public async writeZipFile(zip: JSZip, fileName: string, outputPath: string): Promise<void> {
@@ -26,7 +26,7 @@ export class FileManager {
       zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
         .pipe(fs.createWriteStream(zipFilePath))
         .once('finish', () => {
-          this.logger.log(`Zip file has been written to ${zipFilePath}`)
+          this._logger.log(`Zip file has been written to ${zipFilePath}`)
           resolve()
         })
         .once('error', reject)
@@ -41,25 +41,10 @@ export class FileManager {
         ? error.message
         : JSON.stringify(error)
 
-      this.logger.logError(msg)
+      this._logger.logError(msg)
       throw error
     }
   }
-
-  public async streamToUint8Array(stream: ReadableStream): Promise<Uint8Array> {
-    const reader = stream.getReader()
-    const chunks: Uint8Array[] = []
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        chunks.push(value)
-      }
-    } finally {
-      reader.releaseLock()
-    }
-
-    return new Uint8Array(Buffer.concat(chunks))
-  }
 }
+
+export default FileManager

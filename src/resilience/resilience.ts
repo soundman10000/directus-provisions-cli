@@ -1,34 +1,34 @@
-import { Logger } from '../logger/logger'
+import Logger from '../logger/logger'
 import { delay } from '../utilities/utilities'
 
-export class Resilience {
-  private retries: number
-  private timeout: number
-  private logger: Logger
+class Resilience {
+  private _retries: number
+  private _timeout: number
+  private _logger: Logger
 
   constructor(retries: number = 3, timeout: number = 1000) {
-    this.retries = retries
-    this.timeout = timeout
-    this.logger = Logger.getInstance()
+    this._retries = retries
+    this._timeout = timeout
+    this._logger = Logger.getInstance()
   }
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     let attempts = 0
-    while (attempts < this.retries) {
+    while (attempts < this._retries) {
       try {
-        if (this.timeout === -1) {
+        if (this._timeout === -1) {
           return await fn()
         } else {
           return await this.withTimeout(fn)
         }
       } catch (error) {
         attempts++
-        if (attempts >= this.retries) {
+        if (attempts >= this._retries) {
           throw error
         }
-        this.logger.logError(`\nAttempt ${attempts} failed.`)
-        this.logger.log('Retrying...')
-        await delay(this.timeout)
+        this._logger.logError(`\nAttempt ${attempts} failed.`)
+        this._logger.log('Retrying...')
+        await delay(this._timeout)
       }
     }
     throw new Error('Max retries reached')
@@ -38,7 +38,7 @@ export class Resilience {
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Operation timed out'))
-      }, this.timeout)
+      }, this._timeout)
 
       fn().then(
         (result) => {
@@ -53,3 +53,5 @@ export class Resilience {
     })
   }
 }
+
+export default Resilience

@@ -1,6 +1,6 @@
 import colors from 'ansi-colors'
 
-export class Logger {
+class Logger {
   private static instance: Logger 
 
   public static getInstance(): Logger {
@@ -22,3 +22,5 @@ export class Logger {
     process.stdout.write(colors.green(`${message}\n`))
   }
 }
+
+export default Logger

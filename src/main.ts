@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import listCommand from './commands/list'
-import exportCommand from './commands/export'
-import importCommand from './commands/import'
-import precedenceCommand from './commands/precedence'
+import * as commands from './commands'
 
 yargs(hideBin(process.argv))
-  .command(listCommand)
-  .command(exportCommand)
-  .command(importCommand)
-  .command(precedenceCommand)
+  .command(commands.listCommand)
+  .command(commands.exportCommand)
+  .command(commands.importCommand)
+  .command(commands.precedenceCommand)
   .demandCommand()
   .help()
   .argv

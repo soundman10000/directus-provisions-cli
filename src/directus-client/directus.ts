@@ -1,47 +1,35 @@
-import { 
-  createDirectus,
-  RestClient,
-  readItems,
-  readCollections, 
-  rest,
-  utilsExport,
-  utilsImport,
-  readAssetRaw,
-  staticToken,
-  StaticTokenClient, 
-  readFields
-} from '@directus/sdk'
+import  * as d from '@directus/sdk'
 
+import Logger from '../logger/logger'
+import { ProvisionConfig } from '../config/config'
 import { v4 as uuidv4 } from 'uuid'
 import type { Field, CollectionFields, DirectusResponse, Collection } from './directus.d'
-import { Logger } from '../logger/logger'
-import { DirectusConfig } from '../config/config'
 
-export class DirectusClient {
+class DirectusClient {
   private static instance: DirectusClient
-  private logger: Logger
-  private client: ReturnType<typeof createDirectus> & RestClient<any> & StaticTokenClient<any>
+  private _logger: Logger
+  private _client: ReturnType<typeof d.createDirectus> & d.RestClient<any> & d.StaticTokenClient<any>
 
-  public static getInstance(env: string, config: DirectusConfig): DirectusClient {
+  public static getInstance(env: string, config: ProvisionConfig): DirectusClient {
     if (!DirectusClient.instance) {
       DirectusClient.instance = new DirectusClient(env, config)
     }
     return DirectusClient.instance
   }
 
-  constructor(env: string, config: DirectusConfig) {
-    this.logger = Logger.getInstance()
+  private constructor(env: string, config: ProvisionConfig) {
+    this._logger = Logger.getInstance()
     
     const clientConfig = config.getDirectusConfig(env)
 
-    this.client = createDirectus(clientConfig.directusUrl)
-      .with(rest())
-      .with(staticToken(clientConfig.directusToken))
+    this._client = d.createDirectus(clientConfig.directusUrl)
+      .with(d.rest())
+      .with(d.staticToken(clientConfig.directusToken))
   }
 
   public async listItems(collection: string): Promise<any[]> {
     try {
-      return await this.client.request(readItems(collection))
+      return await this._client.request(d.readItems(collection))
     } catch (exception) {
       this.handleError(exception)
     }
@@ -51,7 +39,7 @@ export class DirectusClient {
 
   public async readCollections(includeSystem: boolean = false): Promise<Collection[]> {
     try {
-      const allCollections = await this.client.request(readCollections())
+      const allCollections = await this._client.request(d.readCollections())
       
       return includeSystem 
         ? allCollections as Collection[]
@@ -64,7 +52,7 @@ export class DirectusClient {
 
   public async readFields(includeSystem: boolean = false): Promise<Field[]> {
     try {
-      const allFields = await this.client.request(readFields())
+      const allFields = await this._client.request(d.readFields())
       
       return includeSystem 
         ? allFields as Field[]
@@ -80,7 +68,7 @@ export class DirectusClient {
     const id: string = uuidv4()
     const query = { fields: collection.fields }
     try {
-      await this.client.request(utilsExport(collection.name, 'csv', {
+      await this._client.request(d.utilsExport(collection.name, 'csv', {
         fields: query.fields
       }, { id }))
     } catch (exception) {
@@ -92,7 +80,7 @@ export class DirectusClient {
 
   public async download(id: string): Promise<ReadableStream<Uint8Array>> {
     try {
-      return await this.client.request(readAssetRaw(id))
+      return await this._client.request(d.readAssetRaw(id))
     } catch (exception) {
       this.handleError(exception)
       throw exception
@@ -101,7 +89,7 @@ export class DirectusClient {
 
   public async upload(collection: string, file: FormData): Promise<void> {
     try {
-      await this.client.request(utilsImport(collection, file))
+      await this._client.request(d.utilsImport(collection, file))
     } catch (exception) {
       this.handleError(exception)
       throw exception
@@ -110,12 +98,12 @@ export class DirectusClient {
 
   private handleError(error: any): void {
     if (this.isDirectusResponse(error)) {
-      this.logger.log("")
+      this._logger.log("")
       const errorMessage = 'Directus API Errors: ' + (error.errors?.map(err => err.message).join(', ') || 'No error messages')
-      this.logger.logError(errorMessage)
+      this._logger.logError(errorMessage)
     } else {
       const errorText = error instanceof Error ? error.message : JSON.stringify(error)
-      this.logger.logError('Unexpected Error: ' + errorText)
+      this._logger.logError('Unexpected Error: ' + errorText)
     }
   }
 
@@ -123,3 +111,5 @@ export class DirectusClient {
     return 'errors' in error && Array.isArray(error.errors)
   }
 }
+
+export default DirectusClient

@@ -1,15 +1,15 @@
-import { DirectusClient } from '../directus-client/directus'
-import { Resilience } from '../resilience/resilience'
-import { LoadingAnimation } from '../logger/loading-animation'
-import { FileManager } from '../utilities/file-manager'
-import { Logger } from '../logger/logger'
+import DirectusClient from '../directus-client/directus'
+import Resilience from '../resilience/resilience'
+import LoadingAnimation from '../logger/loading-animation'
+import FileManager from '../utilities/file-manager'
+import Logger from '../logger/logger'
 import JSZip from 'jszip'
 
-export class ImportService {
+class ImportService {
+  static instance: ImportService
   private _client: DirectusClient
   private _fileManager: FileManager
   private _logger: Logger
-  static instance: ImportService
   
   public static getInstance(client: DirectusClient, logger: Logger, fileManager: FileManager): ImportService {
     if (!ImportService.instance) {
@@ -31,12 +31,13 @@ export class ImportService {
         .then(JSZip.loadAsync)
   
       for (const collection of collectionOrder) {
-        const filename = `${collection}.csv`
-        const file = data.files[filename]
+        const filename = `${collection}.csv`;
+        const file = data.files[filename];
+      
         if (file) {
-          await this.uploadFile(file, collection)
+          await this.uploadFile(file, collection);
         } else {
-          this._logger.logError(`File ${filename} not found in the archive.`)
+          this._logger.logError(`File ${filename} not found in the archive.`);
         }
       }
     } catch (error) {
@@ -74,3 +75,5 @@ export class ImportService {
     this._logger.log(`Loaded collection ${collection}`)
   }
 }
+
+export default ImportService

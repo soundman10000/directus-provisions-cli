@@ -13,16 +13,16 @@ interface DirectusTokens {
   [key: string]: string
 }
 
-export class DirectusConfig {
-  private static instance: DirectusConfig
-  private directusUrls: DirectusUrls
-  private directusTokens: DirectusTokens
+export class ProvisionConfig {
+  private static instance: ProvisionConfig
+  private _directusUrls: DirectusUrls
+  private _directusTokens: DirectusTokens
   
-  public static getInstance(): DirectusConfig {
-    if (!DirectusConfig.instance) {
-      DirectusConfig.instance = new DirectusConfig()
+  public static getInstance(): ProvisionConfig {
+    if (!ProvisionConfig.instance) {
+      ProvisionConfig.instance = new ProvisionConfig()
     }
-    return DirectusConfig.instance
+    return ProvisionConfig.instance
   }
 
   constructor() {
@@ -36,23 +36,23 @@ export class DirectusConfig {
     }
 
     try {
-      this.directusUrls = JSON.parse(directusUrl)
-      this.directusTokens = JSON.parse(directusToken)
+      this._directusUrls = JSON.parse(directusUrl)
+      this._directusTokens = JSON.parse(directusToken)
     } catch (error) {
       throw new Error('Invalid JSON in DIRECTUS_URL or DIRECTUS_TOKEN environment variables')
     }
   }
 
   public getDirectusConfig(env: string): Config {
-    const url = this.directusUrls[env]
-    const token = this.directusTokens[env]
+    const url = this._directusUrls[env]
+    const token = this._directusTokens[env]
     if (!url || !token) {
       throw new Error(`Directus configuration for environment ${env} is missing`)
     }
 
     return {
-      directusUrl: this.directusUrls[env],
-      directusToken: this.directusTokens[env]
+      directusUrl: this._directusUrls[env],
+      directusToken: this._directusTokens[env]
     }
   }
 }
