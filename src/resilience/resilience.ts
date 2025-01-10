@@ -1,4 +1,5 @@
 import { Logger } from '../logger/logger'
+import { delay } from '../utilities/utilities'
 
 export class Resilience {
   private retries: number
@@ -27,7 +28,7 @@ export class Resilience {
         }
         this.logger.logError(`\nAttempt ${attempts} failed.`)
         this.logger.log('Retrying...')
-        await this.delay(this.timeout)
+        await delay(this.timeout)
       }
     }
     throw new Error('Max retries reached')
@@ -50,9 +51,5 @@ export class Resilience {
         }
       )
     })
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }

@@ -13,7 +13,7 @@ export class LoadingAnimation {
 
     let dots = ''
     this.intervalId = setInterval(() => {
-      dots = dots.length >= 3 ? '' : dots + '.'
+      dots += '.'
       this.logger.log(`\r${input}${dots}`, false)
     }, 250)
   }

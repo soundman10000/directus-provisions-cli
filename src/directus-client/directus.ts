@@ -1,4 +1,5 @@
-import { createDirectus,
+import { 
+  createDirectus,
   RestClient,
   readItems,
   readCollections, 
@@ -11,8 +12,8 @@ import { createDirectus,
   readFields
 } from '@directus/sdk'
 
-import { DirectusResponse, Collection, Field, CollectionFields } from '../types/directus'
 import { v4 as uuidv4 } from 'uuid'
+import type { Field, CollectionFields, DirectusResponse, Collection } from './directus.d'
 import { Logger } from '../logger/logger'
 import { DirectusConfig } from '../config/config'
 
@@ -53,28 +54,28 @@ export class DirectusClient {
 
   public async readCollections(includeSystem: boolean = false): Promise<Collection[]> {
     try {
-      const allCollections = await this.client.request(readCollections());
+      const allCollections = await this.client.request(readCollections())
       
       return includeSystem 
         ? allCollections as Collection[]
-        : allCollections.filter(collection => !collection.collection.startsWith('directus_')) as Collection[];
+        : allCollections.filter(collection => !collection.collection.startsWith('directus_')) as Collection[]
     } catch (exception) {
-      this.handleError(exception);
-      return [];
+      this.handleError(exception)
+      return []
     }
   }
 
   public async readFields(includeSystem: boolean = false): Promise<Field[]> {
     try {
-      const allFields = await this.client.request(readFields());
+      const allFields = await this.client.request(readFields())
       
       return includeSystem 
         ? allFields as Field[]
-        : allFields.filter(field => !field.collection.startsWith('directus_')) as Field[];
+        : allFields.filter(field => !field.collection.startsWith('directus_')) as Field[]
 
     } catch (exception) {
-      this.handleError(exception);
-      return []; 
+      this.handleError(exception)
+      return [] 
     }
   }
 

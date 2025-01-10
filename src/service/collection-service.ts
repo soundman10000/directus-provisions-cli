@@ -1,34 +1,22 @@
 import { DirectusClient } from '../directus-client/directus'
-import type { Collection } from '../types/directus'
-import { pipe } from '../fp/composition'
-import { Logger } from '../logger/logger'
+import { toCollectionsModel, orderCollectionsByForeignKey } from './collection-service.model'
 
 export class CollectionService {
   private client: DirectusClient
-  private logger: Logger
-
+  
   constructor(env: string) {
     this.client = DirectusClient.getInstance(env)
-    this.logger = Logger.getInstance()
   }
 
   async listCollections(): Promise<string[]> {
-    this.logger.log('Reading Collections on Directus')
     return await this.client.readCollections().then(toCollectionsModel)
   }
 
   async listItems(collection: string): Promise<any[]> {
     return await this.client.listItems(collection)
   }
+
+  async listCollectionsPrecedence(): Promise<string[]> {
+    return await this.client.readFields().then(orderCollectionsByForeignKey)
+  }
 }
-
-const filterFolders = (collection: Collection[]): Collection[] => 
-  collection.filter(z => z.schema != null)
-
-const pullCollection = (collection: Collection[]): string[] =>
-  collection.map(z => z.collection)
-
-const toCollectionsModel = pipe(
-  filterFolders,
-  pullCollection
-) as (collections: Collection[]) => string[]

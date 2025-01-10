@@ -1,10 +1,10 @@
+const headersMapSymbol: unique symbol = Symbol('headers map')
+const headersMapSortedSymbol: unique symbol = Symbol('headers map sorted')
+
 interface ErrorItem {
   message: string
   extensions: object
 }
-
-const headersMapSymbol: unique symbol = Symbol('headers map')
-const headersMapSortedSymbol: unique symbol = Symbol('headers map sorted')
 
 interface HeadersList {
   cookies: null | string
@@ -33,13 +33,13 @@ interface Response {
   headers: HeadersList
 }
 
-export interface DirectusResponse {
+interface DirectusResponse {
   data: Record<string, any>[]
   errors?: ErrorItem[]
   response: Response
 }
 
-export interface Collection {
+interface Collection {
   collection: string
   meta: {
     collection: string
@@ -70,7 +70,7 @@ export interface Collection {
   }
 }
 
-export interface Field {
+interface Field {
   id: number
   collection: string
   field: string
@@ -120,7 +120,9 @@ interface FieldMeta {
   validation_message: null
 }
 
-export interface CollectionFields {
+interface CollectionFields {
     name: string,
     fields: string[]
 }
+
+export { CollectionFields, Field, Collection, DirectusResponse }

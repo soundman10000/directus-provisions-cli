@@ -30,16 +30,19 @@ const command: CommandModule<{}, CommandArgs> = {
     const collectionService = new FieldService(argv.env)
     const exportService = new ExportService(argv.env)
     const logger  = Logger.getInstance()
-    const loadingAnimation = new LoadingAnimation()
     
     try {
       const fields = await collectionService
-        .listFields()
+        .findCollectionFields()
         .then(x => exportService.exportCollections(x))
-        
-      loadingAnimation.start('Giving Directus a minute to catch up')
-      await delay(2000)
-      loadingAnimation.stop()
+    
+      const loadingAnimation = new LoadingAnimation()
+      try {
+        loadingAnimation.start('Giving Directus a minute to catch up')
+        await delay(2000)
+      } finally {
+        loadingAnimation.stop()
+      } 
       
       await exportService.downloadFiles(fields, argv.path)
 

@@ -1,7 +1,7 @@
 import { DirectusClient } from '../directus-client/directus'
+import type { CollectionFields } from '../directus-client/directus.d'
 import { Resilience } from '../resilience/resilience'
 import { FileManager } from '../utilities/file-manager'
-import { CollectionFields } from '../types/directus'
 import { Logger } from '../logger/logger'
 import JSZip from 'jszip'
 

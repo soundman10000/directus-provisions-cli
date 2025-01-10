@@ -1,19 +1,18 @@
-import { DirectusClient } from '../directus-client/directus'
-import { Field } from '../types/directus'
+import type { Collection, Field } from '../directus-client/directus.d'
+import { pipe } from '../fp/composition'
 
-export class PrecedenceService {
-  private client: DirectusClient
+const filterFolders = (collection: Collection[]): Collection[] => 
+  collection.filter(z => z.schema != null)
 
-  constructor(env: string) {
-    this.client = DirectusClient.getInstance(env)
-  }
+const pullCollection = (collection: Collection[]): string[] =>
+  collection.map(z => z.collection)
 
-  async listCollectionsPrecedence(): Promise<string[]> {
-    return await this.client.readFields().then(orderCollectionsByForeignKey)
-  }
-}
+const toCollectionsModel = pipe(
+  filterFolders,
+  pullCollection
+) as (collections: Collection[]) => string[]
 
-function orderCollectionsByForeignKey(fields: Field[]): string[] {
+const orderCollectionsByForeignKey = (fields: Field[]): string[] => {
   const collections = new Map<string, Set<string>>()
   const collectionList = new Set<string>()
 
@@ -35,10 +34,10 @@ function orderCollectionsByForeignKey(fields: Field[]): string[] {
     visit(collection, collections, visited, result)
   }
 
-  return result
+  return result.reverse()
 }
 
-function visit(collection: string, collections: Map<string, Set<string>>, visited: Set<string>, result: string[]): void {
+const visit = (collection: string, collections: Map<string, Set<string>>, visited: Set<string>, result: string[]): void => {
   if (visited.has(collection)) {
     return
   }
@@ -53,3 +52,5 @@ function visit(collection: string, collections: Map<string, Set<string>>, visite
 
   result.push(collection)
 }
+
+export { toCollectionsModel, orderCollectionsByForeignKey }

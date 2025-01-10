@@ -1,5 +1,5 @@
 import { CommandModule } from "yargs"
-import { PrecedenceService } from '../service/precedence-service'
+import { CollectionService } from '../service/collection-service'
 import { Logger } from '../logger/logger'
 
 interface CommandArgs {
@@ -19,7 +19,7 @@ const command: CommandModule<{}, CommandArgs> = {
   },
   handler: async (argv: CommandArgs) => {
     const logger = Logger.getInstance()
-    const service = new PrecedenceService(argv.env)
+    const service = new CollectionService(argv.env)
 
     try {
       var collections = await service.listCollectionsPrecedence()
