@@ -46,8 +46,9 @@ class DirectusClient {
         : allCollections.filter(collection => !collection.collection.startsWith('directus_')) as Collection[]
     } catch (exception) {
       this.handleError(exception)
-      return []
     }
+
+    return []
   }
 
   public async readFields(includeSystem: boolean = false): Promise<Field[]> {
@@ -60,8 +61,9 @@ class DirectusClient {
 
     } catch (exception) {
       this.handleError(exception)
-      return [] 
     }
+
+    return [] 
   }
 
   public async export(collection: CollectionFields): Promise<string> {
